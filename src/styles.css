@@ -1,0 +1,228 @@
+/* CGA-inspired palette: black, white, cyan, magenta */
+:root {
+  --bg: #000000;
+  --fg: #ffffff;
+  --cyan: #55ffff;
+  --magenta: #ff55ff;
+  --yellow: #ffff55;
+  --green: #55ff55;
+  --red: #ff5555;
+  --gray: #aaaaaa;
+  --dim: #555555;
+  --border: #55ffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: #111;
+  color: var(--fg);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+#screen {
+  width: min(100vw, 960px);
+  height: min(100vh, 640px);
+  aspect-ratio: 3 / 2;
+  background: var(--bg);
+  border: 4px double var(--border);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-align: center;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+h1 { font-size: 28px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; }
+
+button, .menu-item {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--cyan);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.05s;
+}
+
+button:hover, button:focus, .menu-item:hover, .menu-item:focus {
+  background: var(--cyan);
+  color: var(--bg);
+  outline: none;
+}
+
+button.primary {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+button.primary:hover, button.primary:focus {
+  background: var(--yellow);
+  color: var(--bg);
+}
+
+input[type=text], input[type=number] {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--cyan);
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.row { display: flex; gap: 8px; align-items: center; }
+.col { display: flex; flex-direction: column; gap: 6px; }
+.spacer { flex: 1; }
+.center { text-align: center; }
+.dim { color: var(--gray); }
+.warn { color: var(--yellow); }
+.bad { color: var(--red); }
+.good { color: var(--green); }
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.menu .menu-item {
+  text-align: left;
+  font-size: 18px;
+  padding: 8px 16px;
+}
+
+.status-bar {
+  border-top: 1px dashed var(--cyan);
+  padding-top: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  color: var(--gray);
+}
+
+.status-bar b { color: var(--fg); }
+
+.log {
+  margin-top: 8px;
+  border: 1px solid var(--dim);
+  padding: 4px 8px;
+  font-size: 13px;
+  height: 90px;
+  overflow-y: auto;
+  color: var(--gray);
+}
+
+.log p { margin: 2px 0; }
+.log p:last-child { color: var(--fg); }
+
+.canvas-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+canvas {
+  background: #001;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border: 1px solid var(--cyan);
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--cyan);
+  font-size: 12px;
+  margin: 0 2px;
+  color: var(--cyan);
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--dim); text-align: left; }
+th { color: var(--cyan); }
+
+.title-art {
+  font-family: monospace;
+  white-space: pre;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--green);
+  margin: 8px 0;
+}
+
+.field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.field label { width: 140px; color: var(--cyan); }
+
+.scroll {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.flash {
+  animation: flash 0.6s 1;
+}
+
+@keyframes flash {
+  0%, 100% { background: var(--bg); }
+  50% { background: var(--magenta); }
+}
+
+.muted-toggle {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 12px;
+  border: 1px solid var(--dim);
+  padding: 2px 6px;
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.muted-toggle.on { color: var(--green); border-color: var(--green); }

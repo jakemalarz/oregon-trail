@@ -5,6 +5,9 @@ import { applyIllnessTick, attemptRecovery } from './illness';
 import { rollEvent, type EventOutcome } from './events';
 import { aliveCount } from './state';
 import { checkGameOver } from './scoring';
+import { currentEnvironment } from './environment';
+import { DEFAULT_ROUTE } from './landmarks';
+import { addJournalEntry } from './journal';
 
 export interface StepResult {
   travel: DayResult;
@@ -35,11 +38,19 @@ export function createEngine(state: GameState): Engine {
           reason: 'Game already ended.',
         };
       }
+      const aliveBefore = new Set(state.party.filter((p) => p.alive).map((p) => p.name));
       const travel = dailyTravel(state);
-      const event = rollEvent(state, rng);
+      const env = currentEnvironment(DEFAULT_ROUTE, state);
+      const event = rollEvent(state, rng, env);
+      if (event.message) addJournalEntry(state, 'event', event.message, state.currentNodeId);
       attemptRecovery(state, rng);
       const illnessMessages = applyIllnessTick(state);
       state.rngSeed = rng.state();
+      for (const m of state.party) {
+        if (!m.alive && aliveBefore.has(m.name)) {
+          addJournalEntry(state, 'death', `${m.name} has died.`, state.currentNodeId);
+        }
+      }
 
       const messages = [...travel.notes];
       if (event.message) messages.push(event.message);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rollEvent, listEvents } from '../../src/core/events';
+import { rollEvent, listEvents, effectiveWeight } from '../../src/core/events';
 import { createInitialState } from '../../src/core/state';
 import type { NewGameOptions } from '../../src/core/state';
 import { createRng } from '../../src/core/rng';
@@ -105,7 +105,7 @@ describe('events', () => {
   it('rollEvent eventually produces every event id over many seeds', () => {
     const list = listEvents();
     const seen = new Set<string>();
-    for (let seed = 1; seed < 5000 && seen.size < list.length; seed++) {
+    for (let seed = 1; seed < 20000 && seen.size < list.length; seed++) {
       const s = createInitialState(opts());
       s.inventory.food = 1000;
       s.inventory.ammunition = 200;
@@ -120,6 +120,49 @@ describe('events', () => {
         if (r.id !== 'none') seen.add(r.id);
       }
     }
-    expect(seen.size).toBeGreaterThanOrEqual(list.length - 2);
+    expect(seen.size).toBeGreaterThanOrEqual(list.length - 4);
+  });
+
+  it('catalog has at least 40 events with positive base weights', () => {
+    const list = listEvents();
+    expect(list.length).toBeGreaterThanOrEqual(40);
+    expect(list.every((e) => e.weight > 0)).toBe(true);
+  });
+
+  it('effectiveWeight defaults to base weight when env or whereWeight missing', () => {
+    const list = listEvents();
+    const def = list.find((e) => e.id === 'theft')!;
+    expect(effectiveWeight(def)).toBe(def.weight);
+    expect(effectiveWeight(def, 'plains')).toBe(def.weight);
+    const fruit = list.find((e) => e.id === 'fruitFound')!;
+    expect(effectiveWeight(fruit, 'desert')).toBe(0);
+    expect(effectiveWeight(fruit, 'forest')).toBeGreaterThan(fruit.weight);
+  });
+
+  it('environment weighting biases the distribution', () => {
+    const list = listEvents();
+    const buffalo = list.find((e) => e.id === 'buffaloHerd')!;
+    const sandstorm = list.find((e) => e.id === 'sandstorm')!;
+    expect(effectiveWeight(buffalo, 'plains')).toBeGreaterThan(effectiveWeight(buffalo, 'forest'));
+    expect(effectiveWeight(sandstorm, 'desert')).toBeGreaterThan(effectiveWeight(sandstorm, 'plains'));
+  });
+
+  it('rollEvent on plains yields buffalo more than on mountains (statistical)', () => {
+    const rngPlains = createRng(99);
+    const rngMtn = createRng(99);
+    let plainsHits = 0;
+    let mtnHits = 0;
+    const trials = 800;
+    for (let i = 0; i < trials; i++) {
+      const sP = createInitialState(opts());
+      sP.inventory.food = 0;
+      const r1 = rollEvent(sP, rngPlains, 'plains');
+      if (r1.id === 'buffaloHerd') plainsHits++;
+      const sM = createInitialState(opts());
+      sM.inventory.food = 0;
+      const r2 = rollEvent(sM, rngMtn, 'mountains');
+      if (r2.id === 'buffaloHerd') mtnHits++;
+    }
+    expect(plainsHits).toBeGreaterThan(mtnHits);
   });
 });

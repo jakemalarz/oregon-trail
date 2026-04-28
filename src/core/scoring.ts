@@ -1,6 +1,7 @@
 import type { GameState, ScoreEntry } from './types';
 import { PROFESSION_MULTIPLIER, aliveCount } from './state';
 import { formatDate } from './calendar';
+import { loanPenalty } from './banking';
 
 export function computeScore(state: GameState): number {
   if (!state.victory) return 0;
@@ -16,7 +17,9 @@ export function computeScore(state: GameState): number {
     inv.axles * 4 +
     inv.tongues * 4 +
     state.money * 2;
-  return possessions * PROFESSION_MULTIPLIER[state.profession];
+  const raw = possessions * PROFESSION_MULTIPLIER[state.profession];
+  const penalty = loanPenalty(state);
+  return Math.max(0, raw - penalty);
 }
 
 export function makeScoreEntry(state: GameState): ScoreEntry {

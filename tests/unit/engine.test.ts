@@ -71,4 +71,17 @@ describe('engine', () => {
       expect(r.reason).toBeDefined();
     }
   });
+
+  it('writes a death entry to the journal when a member dies during a step', () => {
+    const s = fullyOutfitted();
+    const eng = createEngine(s);
+    s.party[1].illness = 'cholera';
+    s.party[1].health = 1;
+    for (let i = 0; i < 60 && s.party[1].alive; i++) eng.step();
+    if (!s.party[1].alive) {
+      const deaths = s.journal.filter((j) => j.kind === 'death');
+      expect(deaths.length).toBeGreaterThan(0);
+      expect(deaths.some((d) => d.text.includes(s.party[1].name))).toBe(true);
+    }
+  });
 });

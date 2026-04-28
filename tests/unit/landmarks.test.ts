@@ -1,33 +1,80 @@
 import { describe, it, expect } from 'vitest';
-import { LANDMARKS, currentLandmark, nextLandmark, milesToNextLandmark } from '../../src/core/landmarks';
+import {
+  LANDMARKS,
+  DEFAULT_ROUTE,
+  currentLandmark,
+  nextLandmark,
+  milesToNextLandmark,
+  getLandmark,
+} from '../../src/core/landmarks';
+import { createInitialState } from '../../src/core/state';
+import type { NewGameOptions } from '../../src/core/state';
+import { totalRouteMiles } from '../../src/core/route';
+
+const opts = (): NewGameOptions => ({
+  profession: 'banker',
+  partyNames: ['A', 'B', 'C', 'D', 'E'],
+  departureMonth: 'April',
+  seed: 1,
+});
 
 describe('landmarks', () => {
-  it('has 17 landmarks starting at Independence and ending at Willamette', () => {
-    expect(LANDMARKS).toHaveLength(17);
+  it('has 26 landmarks starting at Independence and ending at Willamette', () => {
+    expect(LANDMARKS).toHaveLength(26);
     expect(LANDMARKS[0].name).toBe('Independence');
     expect(LANDMARKS[LANDMARKS.length - 1].name).toBe('Willamette Valley');
     expect(LANDMARKS[LANDMARKS.length - 1].kind).toBe('destination');
   });
 
-  it('milesFromStart is monotonically increasing', () => {
-    for (let i = 1; i < LANDMARKS.length; i++) {
-      expect(LANDMARKS[i].milesFromStart).toBeGreaterThan(LANDMARKS[i - 1].milesFromStart);
+  it('main route miles total 2250', () => {
+    expect(totalRouteMiles(DEFAULT_ROUTE)).toBe(2250);
+  });
+
+  it('has the expected junctions', () => {
+    const southPass = DEFAULT_ROUTE.outgoing['south-pass'];
+    expect(southPass).toHaveLength(2);
+    expect(southPass.map((e) => e.toNodeId).sort()).toEqual(['fort-bridger', 'green-river']);
+    const dalles = DEFAULT_ROUTE.outgoing['the-dalles'];
+    expect(dalles).toHaveLength(2);
+    expect(dalles.map((e) => e.toNodeId).sort()).toEqual(['barlow-road', 'raft-columbia']);
+  });
+
+  it('every node except destination has at least one outgoing edge', () => {
+    for (const id of Object.keys(DEFAULT_ROUTE.nodes)) {
+      if (id === DEFAULT_ROUTE.destinationNodeId) continue;
+      expect(DEFAULT_ROUTE.outgoing[id].length).toBeGreaterThan(0);
     }
   });
 
-  it('nextLandmark returns following landmark or undefined', () => {
-    expect(nextLandmark(0)?.name).toBe('Kansas River Crossing');
-    expect(nextLandmark(LANDMARKS.length - 1)).toBeUndefined();
+  it('every branch reaches the destination', () => {
+    const reachable = new Set<string>();
+    const visit = (id: string) => {
+      if (reachable.has(id)) return;
+      reachable.add(id);
+      for (const e of DEFAULT_ROUTE.outgoing[id] ?? []) visit(e.toNodeId);
+    };
+    visit(DEFAULT_ROUTE.startNodeId);
+    expect(reachable.has(DEFAULT_ROUTE.destinationNodeId)).toBe(true);
+    expect(reachable.size).toBe(Object.keys(DEFAULT_ROUTE.nodes).length);
   });
 
-  it('currentLandmark returns landmark at index', () => {
-    expect(currentLandmark(0).name).toBe('Independence');
-    expect(currentLandmark(3).name).toBe('Fort Kearney');
+  it('currentLandmark returns landmark at current node', () => {
+    const s = createInitialState(opts());
+    expect(currentLandmark(s).name).toBe('Independence');
   });
 
-  it('milesToNextLandmark computes remaining distance', () => {
-    expect(milesToNextLandmark(0, 0)).toBe(102);
-    expect(milesToNextLandmark(0, 50)).toBe(52);
-    expect(milesToNextLandmark(LANDMARKS.length - 1, 2040)).toBe(0);
+  it('nextLandmark returns following landmark on linear trail', () => {
+    const s = createInitialState(opts());
+    expect(nextLandmark(s)?.name).toBe('Kansas River Crossing');
+  });
+
+  it('milesToNextLandmark computes remaining distance from current state', () => {
+    const s = createInitialState(opts());
+    expect(milesToNextLandmark(s)).toBe(102);
+  });
+
+  it('getLandmark looks up a node by id', () => {
+    expect(getLandmark('fort-laramie').name).toBe('Fort Laramie');
+    expect(() => getLandmark('not-real')).toThrow(/Unknown node/);
   });
 });

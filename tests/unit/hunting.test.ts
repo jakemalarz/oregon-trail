@@ -21,19 +21,19 @@ const opts = (): NewGameOptions => ({
 
 describe('hunting', () => {
   it('exports', () => {
-    expect(HUNT_CARRY_CAP).toBe(100);
+    expect(HUNT_CARRY_CAP).toBe(200);
     expect(SHOT_AMMO_COST).toBe(1);
   });
 
-  it('pickAnimal returns one of the animals', () => {
+  it('pickAnimal returns an animal valid for the environment', () => {
     const rng = createRng(7);
     for (let i = 0; i < 50; i++) {
-      const a = pickAnimal(rng);
-      expect(['rabbit', 'deer', 'buffalo', 'bear']).toContain(a);
+      const a = pickAnimal(rng, 'plains');
+      expect(['rabbit', 'fox', 'antelope', 'deer', 'buffalo', 'wolf']).toContain(a);
     }
   });
 
-  it('applyHunt deducts ammo and caps meat', () => {
+  it('applyHunt deducts ammo and caps meat at carry limit', () => {
     const s = createInitialState(opts());
     s.inventory.ammunition = 50;
     s.inventory.food = 0;
@@ -42,6 +42,16 @@ describe('hunting', () => {
     expect(s.inventory.ammunition).toBe(45);
     expect(r.meatGained).toBe(HUNT_CARRY_CAP);
     expect(s.inventory.food).toBe(HUNT_CARRY_CAP);
+  });
+
+  it('applyHunt distributes hostile damage across the party', () => {
+    const s = createInitialState(opts());
+    s.inventory.ammunition = 10;
+    s.party.forEach((m) => (m.health = 100));
+    const r = applyHunt(s, ['rabbit'], 1, 20);
+    expect(r.partyDamage).toBe(20);
+    const total = s.party.reduce((acc, m) => acc + (100 - m.health), 0);
+    expect(total).toBeGreaterThanOrEqual(20);
   });
 
   it('applyHunt with no kills uses ammo only', () => {

@@ -91,6 +91,11 @@ test.describe('Total party kill', () => {
         await ford.click();
         continue;
       }
+      const route = page.locator('[data-testid^="route-"]').first();
+      if (await route.count()) {
+        await route.click();
+        continue;
+      }
       const back = page.getByTestId('back-to-title');
       if (await back.count()) { ended = true; break; }
     }

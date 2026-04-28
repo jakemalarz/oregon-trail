@@ -8,9 +8,12 @@ import {
   totalDistance,
   rest,
   clamp,
+  departFromNode,
+  pendingOutgoingEdges,
 } from '../../src/core/travel';
 import { createInitialState } from '../../src/core/state';
 import type { NewGameOptions } from '../../src/core/state';
+import { DEFAULT_ROUTE } from '../../src/core/landmarks';
 
 const opts = (): NewGameOptions => ({
   profession: 'banker',
@@ -46,8 +49,8 @@ describe('travel', () => {
     expect(s.rations).toBe('bare');
   });
 
-  it('totalDistance equals last landmark mileage', () => {
-    expect(totalDistance()).toBe(2040);
+  it('totalDistance equals main-route mileage', () => {
+    expect(totalDistance()).toBe(2250);
   });
 
   it('dailyTravel advances mileage and consumes food', () => {
@@ -86,25 +89,51 @@ describe('travel', () => {
     expect(r.notes.join(' ')).toContain('run out of food');
   });
 
-  it('reaching a landmark advances landmarkIndex', () => {
+  it('reaching a landmark advances currentNodeId', () => {
     const s = createInitialState(opts());
     s.inventory.oxen = 6;
     s.inventory.food = 1000;
-    s.milesTraveled = 100;
+    departFromNode(s);
+    s.milesIntoEdge = 100;
     const r = dailyTravel(s);
     expect(r.reachedLandmark).toBe(true);
-    expect(s.landmarkIndex).toBe(1);
+    expect(s.currentNodeId).toBe('kansas-river');
+    expect(s.currentEdgeId).toBeNull();
+    expect(s.milesIntoEdge).toBe(0);
+    expect(s.visitedNodeIds).toContain('kansas-river');
   });
 
   it('reaching destination triggers victory', () => {
     const s = createInitialState(opts());
     s.inventory.oxen = 6;
     s.inventory.food = 1000;
-    s.landmarkIndex = 15;
-    s.milesTraveled = 2030;
+    s.currentNodeId = 'oregon-city';
+    s.currentEdgeId = null;
+    s.milesIntoEdge = 0;
+    departFromNode(s);
+    const finalEdge = DEFAULT_ROUTE.edges[s.currentEdgeId!];
+    s.milesIntoEdge = finalEdge.miles - 5;
     dailyTravel(s);
     expect(s.victory).toBe(true);
     expect(s.ended).toBe(true);
+  });
+
+  it('arriving at a junction sets pendingChoice and pauses travel', () => {
+    const s = createInitialState(opts());
+    s.inventory.oxen = 6;
+    s.inventory.food = 5000;
+    s.currentNodeId = 'devils-gate';
+    s.currentEdgeId = null;
+    s.milesIntoEdge = 0;
+    departFromNode(s);
+    s.milesIntoEdge = DEFAULT_ROUTE.edges[s.currentEdgeId!].miles - 1;
+    const r = dailyTravel(s);
+    expect(r.reachedLandmark).toBe(true);
+    expect(s.currentNodeId).toBe('south-pass');
+    expect(s.pendingChoice).toBe('south-pass');
+    expect(s.currentEdgeId).toBeNull();
+    const next = dailyTravel(s);
+    expect(next.milesAdvanced).toBe(0);
   });
 
   it('rest restores health and consumes food', () => {
@@ -131,6 +160,22 @@ describe('travel', () => {
     s.party.forEach((m) => (m.health = 100));
     dailyTravel(s);
     expect(s.party[0].health).toBeLessThan(100);
+  });
+
+  it('pendingOutgoingEdges returns the outgoing edges for current node', () => {
+    const s = createInitialState(opts());
+    const edges = pendingOutgoingEdges(s);
+    expect(edges).toHaveLength(1);
+    expect(edges[0].toNodeId).toBe('kansas-river');
+  });
+
+  it('dailyTravel does nothing when at the destination dead end', () => {
+    const s = createInitialState(opts());
+    s.currentNodeId = 'willamette';
+    s.currentEdgeId = null;
+    const r = dailyTravel(s);
+    expect(r.milesAdvanced).toBe(0);
+    expect(r.reachedLandmark).toBe(false);
   });
 
   it('filling rations restore health', () => {

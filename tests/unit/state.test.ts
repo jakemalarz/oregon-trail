@@ -40,7 +40,11 @@ describe('state', () => {
     expect(s.pace).toBe('steady');
     expect(s.rations).toBe('filling');
     expect(s.milesTraveled).toBe(0);
-    expect(s.landmarkIndex).toBe(0);
+    expect(s.currentNodeId).toBe('independence');
+    expect(s.currentEdgeId).toBeNull();
+    expect(s.milesIntoEdge).toBe(0);
+    expect(s.visitedNodeIds).toEqual(['independence']);
+    expect(s.pendingChoice).toBeNull();
     expect(s.date.year).toBe(1848);
     expect(s.ended).toBe(false);
     expect(s.victory).toBe(false);

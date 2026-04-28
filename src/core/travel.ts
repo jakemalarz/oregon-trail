@@ -1,7 +1,17 @@
 import type { GameState, Pace, Rations } from './types';
 import { advanceDays, weatherFor } from './calendar';
-import { LANDMARKS, currentLandmark, milesToNextLandmark } from './landmarks';
+import { DEFAULT_ROUTE } from './landmarks';
+import {
+  arriveAtNode,
+  autoDepart,
+  currentEdge,
+  getNode,
+  outgoingEdges,
+  totalRouteMiles,
+} from './route';
 import { aliveCount, aliveMembers } from './state';
+import { accrueDaily } from './banking';
+import { addJournalEntry } from './journal';
 
 export const PACE_MILES: Record<Pace, number> = {
   steady: 14,
@@ -36,17 +46,24 @@ export interface DayResult {
 
 export function dailyTravel(state: GameState): DayResult {
   const notes: string[] = [];
+
+  if (!autoDepart(state, DEFAULT_ROUTE)) {
+    return { milesAdvanced: 0, foodEaten: 0, reachedLandmark: false, notes: [] };
+  }
+
   let miles = PACE_MILES[state.pace];
   if (state.inventory.oxen < 4) miles = Math.floor(miles * 0.6);
   if (state.weather === 'very hot' || state.weather === 'very cold') miles = Math.floor(miles * 0.8);
 
-  const remaining = milesToNextLandmark(state.landmarkIndex, state.milesTraveled);
+  const edge = currentEdge(DEFAULT_ROUTE, state)!;
+  const remaining = edge.miles - state.milesIntoEdge;
   let reachedLandmark = false;
-  if (miles >= remaining && remaining > 0) {
+  if (miles >= remaining) {
     miles = remaining;
     reachedLandmark = true;
   }
 
+  state.milesIntoEdge += miles;
   state.milesTraveled += miles;
 
   const aliveN = aliveCount(state);
@@ -68,11 +85,13 @@ export function dailyTravel(state: GameState): DayResult {
 
   state.date = advanceDays(state.date, 1) as typeof state.date;
   state.weather = weatherFor(state.date.month);
+  accrueDaily(state, 1);
 
   if (reachedLandmark) {
-    state.landmarkIndex += 1;
-    const lm = currentLandmark(state.landmarkIndex);
+    arriveAtNode(state, DEFAULT_ROUTE, edge.toNodeId);
+    const lm = getNode(DEFAULT_ROUTE, state.currentNodeId);
     notes.push(`You have reached ${lm.name}.`);
+    addJournalEntry(state, 'arrived', `Reached ${lm.name}.`, lm.id);
     if (lm.kind === 'destination') {
       state.victory = true;
       state.ended = true;
@@ -87,7 +106,7 @@ export function clamp(v: number, lo: number, hi: number): number {
 }
 
 export function totalDistance(): number {
-  return LANDMARKS[LANDMARKS.length - 1].milesFromStart;
+  return totalRouteMiles(DEFAULT_ROUTE);
 }
 
 export function setPace(state: GameState, pace: Pace): void {
@@ -106,6 +125,18 @@ export function rest(state: GameState, days: number): void {
     else state.inventory.food = 0;
     for (const m of aliveMembers(state)) m.health = clamp(m.health + 5, 0, 100);
     state.date = advanceDays(state.date, 1) as typeof state.date;
+    accrueDaily(state, 1);
   }
   state.weather = weatherFor(state.date.month);
+  if (days > 0) {
+    addJournalEntry(state, 'rest', `Rested ${days} day${days === 1 ? '' : 's'}.`, state.currentNodeId);
+  }
+}
+
+export function departFromNode(state: GameState): boolean {
+  return autoDepart(state, DEFAULT_ROUTE);
+}
+
+export function pendingOutgoingEdges(state: GameState) {
+  return outgoingEdges(DEFAULT_ROUTE, state.currentNodeId);
 }

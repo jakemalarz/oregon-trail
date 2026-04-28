@@ -1,4 +1,5 @@
 import type { GameState, Profession, Month, PartyMember } from './types';
+import { DEFAULT_ROUTE } from './landmarks';
 
 export const PROFESSION_STARTING_MONEY: Record<Profession, number> = {
   banker: 1600,
@@ -33,13 +34,29 @@ export function createInitialState(opts: NewGameOptions): GameState {
     pace: 'steady',
     rations: 'filling',
     milesTraveled: 0,
-    landmarkIndex: 0,
+    currentNodeId: DEFAULT_ROUTE.startNodeId,
+    currentEdgeId: null,
+    milesIntoEdge: 0,
+    visitedNodeIds: [DEFAULT_ROUTE.startNodeId],
+    pendingChoice: null,
     date: { month: opts.departureMonth, day: 1, year: 1848 },
     weather: 'warm',
     log: ['You set out from Independence, Missouri.'],
     rngSeed: opts.seed,
     ended: false,
     victory: false,
+    loan: null,
+    flags: {},
+    rumors: [],
+    journal: [
+      {
+        date: { month: opts.departureMonth, day: 1, year: 1848 },
+        kind: 'depart',
+        nodeId: DEFAULT_ROUTE.startNodeId,
+        text: 'Set out from Independence, Missouri.',
+      },
+    ],
+    epitaph: null,
   };
 }
 

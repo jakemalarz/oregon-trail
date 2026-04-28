@@ -25,9 +25,11 @@ export const INDEPENDENCE_PRICES: PriceList = {
 export const FORT_PRICE_MULTIPLIERS: Record<string, number> = {
   'fort-kearney': 2,
   'fort-laramie': 2,
+  'fort-bridger': 2.5,
   'fort-hall': 2.5,
   'fort-boise': 3,
   'fort-walla-walla': 3,
+  'fort-vancouver': 3,
 };
 
 export interface PurchaseRequest {

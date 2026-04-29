@@ -613,12 +613,12 @@ canonical melody.
 | Track ID | Tune | When | Download URL |
 |---|---|---|---|
 | `title` | Oh! Susanna (Foster, 1848) | Title screen | https://www.8notes.com/scores/18884.asp?ftype=midi (8notes piano) |
-| `travel_a` | Sweet Betsy from Pike (c. 1858) | Trail loop A | https://www.traditionalmusic.co.uk/song-midis/Sweet_Betsy_From_Pike.htm |
-| `travel_b` | Buffalo Gals (1844) | Trail loop B | https://www.theteachersguide.com/kidsongs/buffalogals.htm (alt: https://www.mfiles.co.uk/midi-traditional.htm) |
+| `travel_a` | Sweet Betsy from Pike (c. 1858) | Trail loop A | https://www.8notes.com/school/midi/guitar/SweetBetsy.mid (direct .mid; 8notes guitar arrangement) — alt song if unsuitable: **The Old Chisholm Trail** at https://www.traditionalmusic.co.uk/song-midis/Old_Chizzum_(Chisholm)_Trail.htm |
+| `travel_b` | Buffalo Gals (1844) | Trail loop B | https://www.8notes.com/school/midi/recorder/BuffaloGalsREC.mid (direct .mid; 8notes recorder) — alt: https://freemidi.org/download3-25689-buffalo-gals-4th-of-july — alt song: **Oh My Darling, Clementine** (1884, PD) at https://bitmidi.com/clementine-mid |
 | `hunt` | Camptown Races (Foster, 1850) | Hunt minigame | https://imslp.org/wiki/De_Camptown_Races_(Foster,_Stephen) (alt: https://en.wikipedia.org/wiki/File:Camptown_Races.mid) |
 | `victory` | Yankee Doodle (c. 1767) | Willamette arrival | https://bitmidi.com/yankee-doodle-mid |
 | `dirge` | Shall We Gather at the River (Lowry, 1864) | Tombstone | https://library.timelesstruths.org/music/Shall_We_Gather_at_the_River/midi/ (alt: https://www.mfiles.co.uk/scores/shall-we-gather-at-the-river.htm) |
-| `store` | Skip to My Lou (trad.) | Store / bank | https://musescore.com/user/9453676/scores/9448135 (export → MIDI) |
+| `store` | Skip to My Lou (trad.) | Store / bank | https://www.flutetunes.com/tunes/skip-to-my-lou.mid (direct .mid; flutetunes) — alt: https://www.8notes.com/scores/ (search "Skip to My Lou") |
 | `landmark` | Red River Valley (trad.) | Landmark BG (ducks for dialogue) | https://bitmidi.com/b-taylor-red-river-valley-mid |
 | `dialogue` | (silence + soft pad) | NPC conversations | n/a — synthesized inline |
 

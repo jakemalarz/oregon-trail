@@ -7,3 +7,4 @@ test-results
 *.log
 oregon-trail-dist.zip
 generated-images/
+tracks/

@@ -14,7 +14,7 @@ import { currentEnvironment } from '../core/environment';
 import { createEngine, type Engine } from '../core/engine';
 import { formatDate } from '../core/calendar';
 import { el, clear, focusFirstButton } from './dom';
-import { beep, blip, shoot, hit, fanfare, dirge, isMuted, setMuted } from './sound';
+import { beep, blip, shoot, hit, fanfare, dirge, isMuted, setMuted, preloadSfx, playSfx } from './sound';
 import { createRng } from '../core/rng';
 import { loadManifest, preloadImages, getImage, type PreloadProgress } from './assets';
 import { photoFrame } from './photoFrame';
@@ -109,6 +109,7 @@ async function ensureAssetsLoaded(onProgress?: (p: PreloadProgress) => void): Pr
     const m = await loadManifest();
     setMidiPaths(m.midi);
     await preloadImages(m, onProgress);
+    await preloadSfx(m.sfx);
   } catch {
     // missing manifest in tests / first run — fall back to ASCII art
   }
@@ -285,6 +286,7 @@ export function showStore(): void {
         if (r2.ok) {
           state.log.push(`Bought ${qty} ${it.unit || it.key} for $${r2.cost.toFixed(2)}.`);
           beep();
+          playSfx('coin', { volume: 0.5 });
           showStore();
         } else {
           state.log.push(`Could not buy: ${r2.reason}`);
@@ -359,9 +361,25 @@ export function showBank(): void {
   });
 }
 
+function scanLogForSfx(state: GameState, fromIndex: number): void {
+  for (let i = fromIndex; i < state.log.length; i++) {
+    const lower = state.log[i].toLowerCase();
+    if (lower.includes('storm') || lower.includes('lightning') || lower.includes('thunder')) {
+      playSfx('thunder', { volume: 0.5 });
+    }
+    if (lower.includes('has died') || lower.includes('perished')) {
+      playSfx('death-thud', { volume: 0.6 });
+    }
+    if (/\box\b|oxen/.test(lower)) {
+      playSfx('ox-low', { volume: 0.4, throttleMs: 5000 });
+    }
+  }
+}
+
 export function showTrail(): void {
   if (!engine) return;
   void playMusic('travel_a', { loop: true });
+  playSfx('wind-loop', { volume: 0.2, throttleMs: 12000 });
   const state = engine.state;
   if (state.ended) return showEndScreen();
   if (state.pendingChoice) return showRouteChoice();
@@ -385,7 +403,10 @@ export function showTrail(): void {
     const cont = el('button', { class: 'primary menu-item', text: 'Continue (advance one day)' });
     cont.setAttribute('data-testid', 'continue');
     cont.addEventListener('click', () => {
+      const logBefore = state.log.length;
       engine!.step();
+      playSfx('wagon-creak', { volume: 0.3, throttleMs: 4000 });
+      scanLogForSfx(state, logBefore);
       const found = maybeEncounterTombstone(engine!.state, engine!.rng);
       if (found) {
         const msg = `You found a grave: "${found.epitaph}" — ${found.name}, ${found.date.month} ${found.date.day}, ${found.date.year}.`;
@@ -406,6 +427,7 @@ export function showTrail(): void {
       rest(state, 3);
       state.log.push('You rested 3 days.');
       blip();
+      playSfx('firewood-crackle', { volume: 0.4 });
       showTrail();
     });
 
@@ -502,6 +524,7 @@ export function showRouteChoice(): void {
 export function showLandmark(): void {
   if (!engine) return;
   void playMusic('landmark', { loop: true });
+  playSfx('arrival-bell', { volume: 0.4, throttleMs: 10000 });
   const state = engine.state;
   const lm = currentLandmark(state);
   renderWith((r) => {
@@ -571,6 +594,7 @@ export function showRiver(): void {
           beep();
         } else if (result.capsized) {
           dirge();
+          playSfx('river-splash', { volume: 0.6 });
         } else {
           blip();
         }
@@ -852,6 +876,7 @@ export function showHunt(): void {
         });
         huntState.shotsFired += 1;
         shoot();
+        playSfx('gunshot', { volume: 0.4 });
       }
     };
     const onKeyUp = (e: KeyboardEvent) => keys.delete(e.key);

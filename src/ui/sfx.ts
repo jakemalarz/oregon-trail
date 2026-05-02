@@ -88,3 +88,61 @@ export function dirge(): void {
   const notes = [330, 294, 262, 196];
   notes.forEach((n, i) => setTimeout(() => tone({ freq: n, ms: 350, type: 'triangle' }), i * 320));
 }
+
+const sampleCache = new Map<string, AudioBuffer>();
+const lastPlayedAt = new Map<string, number>();
+
+export async function preloadSfx(paths: Record<string, string>): Promise<void> {
+  const c = getCtx();
+  if (!c) return;
+  await Promise.all(
+    Object.entries(paths).map(async ([id, path]) => {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) return;
+        const arr = await res.arrayBuffer();
+        const buf = await c.decodeAudioData(arr);
+        sampleCache.set(id, buf);
+      } catch {
+        // missing or undecodable — silent fall-through
+      }
+    }),
+  );
+}
+
+export interface PlaySfxOpts {
+  loop?: boolean;
+  volume?: number;
+  throttleMs?: number;
+}
+
+export function playSfx(id: string, opts: PlaySfxOpts = {}): AudioBufferSourceNode | null {
+  if (muted) return null;
+  if (opts.throttleMs) {
+    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const last = lastPlayedAt.get(id) ?? 0;
+    if (now - last < opts.throttleMs) return null;
+    lastPlayedAt.set(id, now);
+  }
+  const c = getCtx();
+  if (!c || !masterGain) return null;
+  const buf = sampleCache.get(id);
+  if (!buf) return null;
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  src.loop = !!opts.loop;
+  const gain = c.createGain();
+  gain.gain.value = opts.volume ?? 0.5;
+  src.connect(gain).connect(masterGain);
+  src.start();
+  return src;
+}
+
+export function stopSfx(node: AudioBufferSourceNode | null): void {
+  if (!node) return;
+  try {
+    node.stop();
+  } catch {
+    // already stopped
+  }
+}

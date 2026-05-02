@@ -583,6 +583,40 @@ each at 480×300, save with the file name shown, and drop into
     the water, late autumn. Ominous, beautiful, cold gray-green
     palette. No people in close-up."
 
+#### 2.5.2 Trail-screen environment backdrops (2 missing)
+
+The trail screen between landmarks shows `hunt-${env}` from the
+manifest as its backdrop. `plains`, `forest`, and `mountains` exist;
+`desert` and `river-valley` are missing, so any edge in those biomes
+(Snake River → Salmon Falls → Three Island → Fort Boise; the Columbia
+raft / Fort Vancouver edges; the Snake River approach) renders the
+ASCII fallback. Generate at 480×300, save under `public/img/hunt/`,
+and add the two manifest entries:
+
+```json
+"hunt-desert": "img/hunt/desert.jpg",
+"hunt-river-valley": "img/hunt/river-valley.jpg"
+```
+
+Use the same style preamble as §2.5. Match the existing top-down-tilted
+framing used for plains/forest/mountains so the trail screen looks
+consistent.
+
+42. **Hunt environment: desert (`desert.jpg`).** "Top-down-tilted view
+    of the Snake River Plain high desert in southern Idaho: pale sage
+    and rabbitbrush flats over dark basalt rubble, scattered juniper,
+    distant low mesas in heat haze. Empty middle distance for animals
+    to move through. Hard midday sun, bleached palette, deep shadows
+    under rocks. No wagons, no figures."
+
+43. **Hunt environment: river-valley (`river-valley.jpg`).**
+    "Top-down-tilted view of the Columbia River bottomlands in autumn:
+    broad gravel bars and shallow side-channels, cottonwoods turning
+    yellow, willows, reeds along the bank, dark conifer ridge in
+    distance. Empty middle distance for animals to move through. Soft
+    overcast light, cool gray-green palette, hint of river mist. No
+    wagons, no figures."
+
 ---
 
 ## 3. Audio strategy
@@ -633,6 +667,27 @@ canonical melody.
 `gunshot`, `wagon-creak`, `river-splash`, `thunder`, `ox-low`, `coin`,
 `death-thud`, `arrival-bell`, `wind-loop`, `firewood-crackle`. ~10
 files, ~30 KB each.
+
+#### 3.3.1 Direct download URLs (verified 2026-05-01)
+
+A free Freesound account is required to download. Each page shows the
+license — confirm "Creative Commons 0" before downloading. After
+download, rename to the filename shown in `manifest.json` and drop
+into `public/sfx/`. Convert any non-`.wav` (e.g. `.ogg`, `.flac`) to
+16-bit mono 22050 Hz `.wav` (`sox in.ogg -c 1 -r 22050 -b 16 out.wav`).
+
+| SFX ID | Filename | Freesound page | Notes |
+|---|---|---|---|
+| `gunshot` | `gunshot.wav` | https://freesound.org/people/wesleyextreme_gamer/sounds/574818/ | "Gunshot.ogg" — verify license; if not CC0, alt: https://signaturesounds.org/store/p/bulletgun-sfx-cc0 (CC0 pack) |
+| `wagon-creak` | `wagon-creak.wav` | https://freesound.org/people/Rudmer_Rotteveel/sounds/502504/ | "Wood Creak Single V2" — CC0 |
+| `river-splash` | `river-splash.wav` | https://freesound.org/people/qubodup/sounds/442773/ | "Big Water Splash" — CC0 |
+| `thunder` | `thunder.wav` | https://freesound.org/people/Fission9/sounds/581124/ | "Distant Thunder 3" — CC0; alt: https://freesound.org/people/xUMR/sounds/486557/ |
+| `ox-low` | `ox-low.wav` | https://freesound.org/s/513561/ | "Cow moo #7" by spurioustransients — CC0 |
+| `coin` | `coin.wav` | https://freesound.org/people/cabled_mess/sounds/350872/ | "Coin_C_01" — CC0 (ChipTone retro) |
+| `death-thud` | `death-thud.wav` | https://freesound.org/people/Breviceps/sounds/449955/ | "Wooden Thud (Mono)" — CC0 |
+| `arrival-bell` | `arrival-bell.wav` | https://freesound.org/people/DisasterServices/sounds/252789/ | "church bell.WAV" — CC0; alt: https://freesound.org/people/Audeption/sounds/425172/ |
+| `wind-loop` | `wind-loop.wav` | https://freesound.org/people/Imjeax/sounds/427401/ | "Desert Ambient LOOP" — loopable; verify CC0 |
+| `firewood-crackle` | `firewood-crackle.wav` | https://freesound.org/people/LordStirling/sounds/483692/ | "torch ambience loop" — CC0, loopable |
 
 ---
 

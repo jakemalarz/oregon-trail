@@ -10,6 +10,8 @@
     "hunt-plains": "img/hunt/plains.jpg",
     "hunt-forest": "img/hunt/forest.jpg",
     "hunt-mountains": "img/hunt/mountains.jpg",
+    "hunt-desert": "img/hunt/desert.jpg",
+    "hunt-river-valley": "img/hunt/river-valley.jpg",
     "river-generic": "img/misc/river-generic.jpg",
     "ev-thunderstorm": "img/events/thunderstorm.jpg",
     "ev-wagon-fire": "img/events/wagon-fire.jpg",
@@ -59,7 +61,7 @@
     "landmark": "midi/red-river-valley.mid"
   },
   "sfx": {
-    "gunshot": "sfx/gunshot.wav",
+    "gunshot": "sfx/gunshot.ogg",
     "wagon-creak": "sfx/wagon-creak.wav",
     "river-splash": "sfx/river-splash.wav",
     "thunder": "sfx/thunder.wav",
@@ -67,7 +69,7 @@
     "coin": "sfx/coin.wav",
     "death-thud": "sfx/death-thud.wav",
     "arrival-bell": "sfx/arrival-bell.wav",
-    "wind-loop": "sfx/wind-loop.wav",
+    "wind-loop": "sfx/wind-loop.ogg",
     "firewood-crackle": "sfx/firewood-crackle.wav"
   }
 }

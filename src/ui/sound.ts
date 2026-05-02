@@ -11,4 +11,7 @@ export {
   setMusicDuck,
   getMusicDuck,
   masterNode,
+  preloadSfx,
+  playSfx,
+  stopSfx,
 } from './sfx';
